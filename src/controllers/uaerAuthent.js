@@ -10,10 +10,11 @@ const register = async (req,res) => {
 
         const {firstName , emailId , password} = req.body;
         req.body.password = await bcrypt.hash(password,10);
+        req.body.role = 'user';
 
         const user = await User.create(req.body);
 
-        const token = jwt.sign({_id : user._id , emailId : emailId}, process.env.KEY , {expiresIn: 60*60});
+        const token = jwt.sign({_id : user._id , emailId : emailId , role : 'user'}, process.env.KEY , {expiresIn: 60*60});
         res.cookie('token' , token , {maxAge : 60*60*1000});
         res.status(201).send("User registered successfully");
 
@@ -57,17 +58,30 @@ const logout = async (req,res) => {
     try{
         const {token} = req.cookies;
         const payload = jwt.decode(token);
-        console.log(payload);
+        // console.log(payload);
         
         await redisClient.set(`token ${token}`,"Blocked");
         await redisClient.expireAt(`token ${token}`,payload.exp);
 
         res.cookie("token" , null , {expires : new Date(Date.now())})
 
-        res.send("User Logged out successfuly");
+        res.send("User Logged out successfully");
     }
     catch(err){
         res.status(503).send("Error : "+err);
     }
 }
-module.exports = {register,login , logout};
+
+const adminRegister = async (req, res) => {
+    validateUser(req.body);
+
+    const {firstName , emailId , password} = req.body;
+    req.body.password = await bcrypt.hash(password , 10);
+
+    const user = await User.create(req.body);
+
+    const token = jwt.sign({_id:user._id , emailId:emailId , role:user.role}, process.env.KEY , {expiresIn: 60*60});
+    res.cookie('token', token , {maxAge : 60*60*1000});
+    res.status(201).send('Admin regigtered successfully');
+}
+module.exports = {register,login , logout , adminRegister};

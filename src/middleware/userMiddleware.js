@@ -17,7 +17,7 @@ const userMiddleware = async (req,res,next) => {
             throw new Error("Use _id is missing.");
         }
 
-        const user = await User.find(_id);
+        const user = await User.findById(_id);
 
         if(!user){
             throw new Error("User does not exist.");
@@ -33,7 +33,7 @@ const userMiddleware = async (req,res,next) => {
         next();
     }
     catch(err){
-        res.status(503).send("Error : "+err);
+        res.status(401).send("Error : "+err);
     }
 }
 
