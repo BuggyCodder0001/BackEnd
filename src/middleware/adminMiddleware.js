@@ -1,5 +1,5 @@
-const User = require('../models/user');
-const jwt = require('jsonwebtoken')
+const User = require("../models/user");
+const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
 
 const adminMiddleware = async (req,res,next) => {
@@ -7,30 +7,29 @@ const adminMiddleware = async (req,res,next) => {
         const {token} = req.cookies;
 
         if(!token){
-            throw new Error("token does not exist.");
+            throw new Error("Token does not exist.");
         }
 
-        const payload = jwt.verify(token,process.env.KEY);
+        const payload = jwt.verify(token , process.env.KEY);
 
         const {_id} = payload;
         if(!_id){
-            throw new Error("Admin _id is missing.");
+            throw new Error("Use _id is missing.");
         }
 
         const user = await User.findById(_id);
 
-        if(payload.role != 'admin'){
-            throw new Error("Access Denied.");
+        if(payload.role != 'admin') {
+            throw new Error("Access Denied");
         }
 
         if(!user){
-            throw new Error("Admin does not exist.");
+            throw new Error("User does not exist.");
         }
 
         const isBlocked = await redisClient.exists(`token : ${token}`);
-        
         if(isBlocked){
-            throw new Error("Invalid Token")
+            throw new Error("Token is invalid.");
         }
 
         req.user = user;
