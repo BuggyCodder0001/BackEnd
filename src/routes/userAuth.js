@@ -1,7 +1,11 @@
 const express = require('express')
-const AuthRouter = express.Router();
-const {register , login} = require('../controllers/uaerAuthent');
+const authRouter = express.Router();
+const {register , login , logout } = require('../controllers/uaerAuthent');
+const userMiddleware = require('../middleware/userMiddleware');
 
 
-AuthRouter.post('/register' , register); // User Registeration
-AuthRouter.post('/login' , login); // user Login
+authRouter.post('/register' , register); // user registration api
+authRouter.post('/login' , login); // user login api
+authRouter.post('/logout',userMiddleware,logout); // logout apli
+
+module.exports = authRouter;
